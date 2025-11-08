@@ -171,6 +171,8 @@
   },
   "active": "4fab8c088478dc0f",
   "lastOpenFiles": [
+    "README.md",
+    "vision.md",
     "docs/LEGACY_ARCHITECTURE.md",
     "legacy/node_modules/@opentelemetry/sdk-trace-node/node_modules/@opentelemetry/resources/build/esnext/detectors/platform/node/machine-id/getMachineId.js.map",
     "legacy/node_modules/@opentelemetry/sdk-trace-node/node_modules/@opentelemetry/resources/build/esnext/detectors/platform/node/machine-id/getMachineId.js",
@@ -205,8 +207,6 @@
     "legacy/node_modules/@opentelemetry/exporter-zipkin/node_modules/@opentelemetry/sdk-trace-base/README.md",
     "legacy/node_modules/@opentelemetry/exporter-zipkin/node_modules/@opentelemetry/resources/README.md",
     "legacy/node_modules/@opentelemetry/exporter-trace-otlp-proto/node_modules/@opentelemetry/sdk-trace-base/README.md",
-    "legacy/node_modules/@opentelemetry/exporter-trace-otlp-proto/node_modules/@opentelemetry/resources/README.md",
-    "legacy/node_modules/@opentelemetry/exporter-trace-otlp-proto/node_modules/@opentelemetry/core/README.md",
     "legacy/node_modules/pdfjs-dist/legacy/web/images/toolbarButton-menuArrow.svg",
     "legacy/node_modules/pdfjs-dist/legacy/web/images/editor-toolbar-delete.svg",
     "legacy/node_modules/pdfjs-dist/legacy/web/images/toolbarButton-editorHighlight.svg",
