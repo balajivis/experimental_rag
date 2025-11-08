@@ -1,0 +1,283 @@
+# ===================================
+# RAG Enterprise Project - .gitignore
+# ===================================
+
+# ==================
+# Environment Files
+# ==================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
+**/.env
+**/.env.local
+
+# ==================
+# Node.js
+# ==================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# ==================
+# Next.js
+# ==================
+.next/
+out/
+build/
+dist/
+.vercel
+.turbo
+*.tsbuildinfo
+next-env.d.ts
+
+# ==================
+# React/Testing
+# ==================
+coverage/
+.nyc_output/
+*.lcov
+
+# ==================
+# Database
+# ==================
+# Prisma
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+prisma/migrations/**/migration.sql
+!prisma/migrations/migration_lock.toml
+!prisma/schema.prisma
+
+# PostgreSQL local data
+postgres_data/
+pgdata/
+*.pgsql
+*.sql.gz
+
+# ChromaDB data
+chroma_data/
+chromadb/
+*.chroma
+
+# ==================
+# Docker
+# ==================
+docker-compose.override.yml
+.dockerignore
+*.log
+.docker/
+
+# Docker volumes (if accidentally copied locally)
+volumes/
+data/
+**/postgres_data/
+**/chroma_data/
+
+# ==================
+# Logs
+# ==================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ==================
+# IDE / Editor
+# ==================
+# VSCode
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.history/
+
+# JetBrains IDEs (WebStorm, IntelliJ, etc.)
+.idea/
+*.iml
+*.iws
+*.ipr
+.idea_modules/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# ==================
+# macOS
+# ==================
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# ==================
+# Windows
+# ==================
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ==================
+# Linux
+# ==================
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ==================
+# Temporary Files
+# ==================
+tmp/
+temp/
+*.tmp
+*.temp
+*.cache
+.cache/
+
+# ==================
+# Build Artifacts
+# ==================
+dist/
+build/
+*.tgz
+*.zip
+*.tar.gz
+
+# ==================
+# Testing
+# ==================
+coverage/
+.nyc_output/
+*.lcov
+.jest-cache/
+
+# ==================
+# Package Manager
+# ==================
+# Yarn
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
+
+# pnpm
+.pnpm-store/
+
+# ==================
+# Security & Secrets
+# ==================
+*.pem
+*.key
+*.cert
+*.crt
+secrets/
+.secrets/
+credentials/
+.credentials/
+
+# API Keys
+*api-keys*
+*secret*
+*private*
+
+# ==================
+# TypeScript
+# ==================
+*.tsbuildinfo
+next-env.d.ts
+
+# ==================
+# Python (if using for scripts)
+# ==================
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+venv/
+env/
+ENV/
+
+# ==================
+# Uploads & User Data
+# ==================
+uploads/
+user-data/
+documents/
+**/uploads/
+**/documents/
+
+# ==================
+# Miscellaneous
+# ==================
+.eslintcache
+.stylelintcache
+*.orig
+.now
+
+# Sentry
+.sentryclirc
+
+# Obsidian (note-taking)
+.obsidian/workspace
+.obsidian/workspace.json
+
+# Claude Code
+.claude/
+
+# ==================
+# Project Specific
+# ==================
+# Legacy backup folder (optional - uncomment if you want to ignore)
+# legacy/
+
+# Documentation drafts
+**/DRAFT_*.md
+**/*.draft.md
+
+# Test files
+test-uploads/
+test-documents/
+
+# Backup files
+*.backup
+*.bak
+*.old
+
+# ==================
+# CI/CD
+# ==================
+.github/workflows/secrets.yml
+
+# ==================
+# Analytics & Monitoring
+# ==================
+.lighthouseci/
