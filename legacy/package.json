@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "@google/gemini-cli": "^0.13.0",
+    "@google/generative-ai": "^0.24.1",
+    "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^5.4.394"
+  }
+}

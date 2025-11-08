@@ -1,0 +1,506 @@
+openapi: 3.0.3
+info:
+  title: RAG Backend API
+  description: |
+    Retrieval Augmented Generation (RAG) Backend API for document processing and AI-powered chat.
+
+    ## Features
+    - Document upload and processing (PDF, TXT, MD)
+    - Vector similarity search using ChromaDB
+    - AI-powered chat with document context
+    - Chat history management
+
+    ## Authentication
+    Currently using userId parameter for testing. NextAuth will be added in Phase 2.
+  version: 1.0.0
+  contact:
+    name: API Support
+  license:
+    name: ISC
+
+servers:
+  - url: http://localhost:3001
+    description: Development server
+  - url: http://localhost:3001/api
+    description: API base path
+
+tags:
+  - name: Health
+    description: Health check endpoints
+  - name: Documents
+    description: Document upload and management
+  - name: Chat
+    description: RAG-powered chat and query endpoints
+
+paths:
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      description: Check if the backend server is running
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Server is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2025-11-08T01:21:24.169Z"
+
+  /api/documents/upload:
+    post:
+      tags:
+        - Documents
+      summary: Upload a document
+      description: |
+        Upload and process a document (PDF, TXT, or MD file).
+        The document will be chunked, embedded, and stored in the vector database.
+      operationId: uploadDocument
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Document file (PDF, TXT, or MD)
+                userId:
+                  type: string
+                  description: User ID (defaults to 'default-user')
+                  example: default-user
+      responses:
+        '202':
+          description: Document uploaded and processing started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Document uploaded and processing started
+                  document:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        example: 550e8400-e29b-41d4-a716-446655440000
+                      filename:
+                        type: string
+                        example: example.pdf
+                      status:
+                        type: string
+                        enum: [PROCESSING]
+                        example: PROCESSING
+        '400':
+          description: Bad request (no file uploaded or invalid file type)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/documents:
+    get:
+      tags:
+        - Documents
+      summary: List documents
+      description: Get all documents for a specific user
+      operationId: listDocuments
+      parameters:
+        - name: userId
+          in: query
+          description: User ID (defaults to 'default-user')
+          required: false
+          schema:
+            type: string
+            default: default-user
+      responses:
+        '200':
+          description: List of documents
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  documents:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Document'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/documents/{id}:
+    get:
+      tags:
+        - Documents
+      summary: Get document details
+      description: Retrieve detailed information about a specific document including its chunks
+      operationId: getDocument
+      parameters:
+        - name: id
+          in: path
+          description: Document ID
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Document details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  document:
+                    $ref: '#/components/schemas/DocumentDetail'
+        '404':
+          description: Document not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags:
+        - Documents
+      summary: Delete a document
+      description: Delete a document from both PostgreSQL and ChromaDB
+      operationId: deleteDocument
+      parameters:
+        - name: id
+          in: path
+          description: Document ID
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Document deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Document deleted successfully
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/chat/query:
+    post:
+      tags:
+        - Chat
+      summary: Send a chat query
+      description: |
+        Send a query and get an AI-generated response with context from uploaded documents.
+        Uses RAG (Retrieval Augmented Generation) to provide accurate, context-aware answers.
+      operationId: chatQuery
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - query
+              properties:
+                query:
+                  type: string
+                  description: The user's question
+                  example: What are the main topics discussed in the documents?
+                userId:
+                  type: string
+                  description: User ID (defaults to 'default-user')
+                  example: default-user
+      responses:
+        '200':
+          description: Chat response with sources
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response:
+                    type: string
+                    example: Based on the documents, the main topics include...
+                  sources:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        documentId:
+                          type: string
+                          format: uuid
+                        chunkIndex:
+                          type: integer
+                        text:
+                          type: string
+        '400':
+          description: Bad request (query is required)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/chat/stream:
+    post:
+      tags:
+        - Chat
+      summary: Send a chat query with streaming response
+      description: |
+        Send a query and receive a streaming AI-generated response using Server-Sent Events (SSE).
+        This provides a better user experience with real-time token streaming.
+      operationId: chatStream
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - query
+              properties:
+                query:
+                  type: string
+                  description: The user's question
+                  example: Explain the key concepts in detail
+                userId:
+                  type: string
+                  description: User ID (defaults to 'default-user')
+                  example: default-user
+      responses:
+        '200':
+          description: Streaming response (Server-Sent Events)
+          content:
+            text/event-stream:
+              schema:
+                type: string
+                example: |
+                  data: {"content":"Based"}
+
+                  data: {"content":" on"}
+
+                  data: {"content":" the"}
+
+                  data: [DONE]
+        '400':
+          description: Bad request (query is required)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/chat/history:
+    get:
+      tags:
+        - Chat
+      summary: Get chat history
+      description: Retrieve chat conversation history for a specific user
+      operationId: getChatHistory
+      parameters:
+        - name: userId
+          in: query
+          description: User ID (defaults to 'default-user')
+          required: false
+          schema:
+            type: string
+            default: default-user
+        - name: limit
+          in: query
+          description: Maximum number of messages to return
+          required: false
+          schema:
+            type: integer
+            default: 50
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: Chat history
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  history:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ChatMessage'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags:
+        - Chat
+      summary: Clear chat history
+      description: Delete all chat history for a specific user
+      operationId: clearChatHistory
+      parameters:
+        - name: userId
+          in: query
+          description: User ID (defaults to 'default-user')
+          required: false
+          schema:
+            type: string
+            default: default-user
+      responses:
+        '200':
+          description: Chat history cleared
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Chat history cleared successfully
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    Document:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        originalName:
+          type: string
+          example: example.pdf
+        mimeType:
+          type: string
+          example: application/pdf
+        size:
+          type: integer
+          description: File size in bytes
+          example: 1048576
+        status:
+          type: string
+          enum: [PROCESSING, COMPLETED, FAILED]
+          example: COMPLETED
+        uploadedAt:
+          type: string
+          format: date-time
+          example: "2025-11-08T01:00:00.000Z"
+        processedAt:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2025-11-08T01:00:30.000Z"
+        chunkCount:
+          type: integer
+          nullable: true
+          example: 42
+        error:
+          type: string
+          nullable: true
+          example: null
+
+    DocumentDetail:
+      allOf:
+        - $ref: '#/components/schemas/Document'
+        - type: object
+          properties:
+            chunks:
+              type: array
+              items:
+                type: object
+                properties:
+                  chunkIndex:
+                    type: integer
+                    example: 0
+                  content:
+                    type: string
+                    example: This is the text content of the chunk...
+
+    ChatMessage:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 660e8400-e29b-41d4-a716-446655440001
+        role:
+          type: string
+          enum: [user, assistant]
+          example: user
+        content:
+          type: string
+          example: What is this document about?
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-11-08T01:00:00.000Z"
+        contextDocuments:
+          type: array
+          items:
+            type: string
+          description: Array of document chunk IDs used as context
+          example: ["550e8400-e29b-41d4-a716-446655440000_chunk_0"]
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: An error occurred

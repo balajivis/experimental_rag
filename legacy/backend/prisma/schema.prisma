@@ -1,0 +1,87 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String
+  name          String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  documents     Document[]
+  chatHistories ChatHistory[]
+
+  @@map("users")
+}
+
+model Document {
+  id          String   @id @default(uuid())
+  userId      String
+  filename    String
+  originalName String
+  mimeType    String
+  size        Int
+  status      DocumentStatus @default(PROCESSING)
+  uploadedAt  DateTime @default(now())
+  processedAt DateTime?
+  error       String?
+
+  // ChromaDB collection metadata
+  chromaCollectionId String?
+  chunkCount        Int?
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chunks      DocumentChunk[]
+
+  @@map("documents")
+  @@index([userId])
+  @@index([status])
+}
+
+enum DocumentStatus {
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+model DocumentChunk {
+  id          String   @id @default(uuid())
+  documentId  String
+  chunkIndex  Int
+  content     String   @db.Text
+  chromaId    String?  // ID in ChromaDB
+  createdAt   DateTime @default(now())
+
+  document    Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@map("document_chunks")
+  @@index([documentId])
+  @@unique([documentId, chunkIndex])
+}
+
+model ChatHistory {
+  id          String   @id @default(uuid())
+  userId      String
+  role        String   // 'user' or 'assistant'
+  content     String   @db.Text
+  createdAt   DateTime @default(now())
+
+  // Optional: link to documents used in context
+  contextDocuments String[] // Array of document IDs
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("chat_history")
+  @@index([userId])
+  @@index([createdAt])
+}
